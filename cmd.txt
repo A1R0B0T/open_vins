@@ -1,0 +1,39 @@
+roscore
+
+roslaunch ov_msckf subscribe.launch  config:=euroc_mav
+
+rviz
+
+roslaunch ov_eval record_euroc.launch
+
+rosrun ov_eval format_converter /home/wangbo/workspace/catkin_ws_ov/gt
+
+rosrun ov_eval plot_trajectories posyaw /home/wangbo/workspace/catkin_ws_ov/gt/algorithms/open_vins/V1_01_easy/run1.txt truth/V1_01_easy.txt
+
+
+
+
+launch file
+
+<launch>
+    <!-- what ros bag to play -->
+    <arg name="bag_name"    default="V1_01_easy" />
+    <arg name="bag_path"    default="/home/wangbo/workspace/catkin_ws_ov/src/open_vins/data/EuRoC_MAV" />
+
+
+    <!-- where to save the recorded poses -->
+    <arg name="path_save"   default="/home/wangbo/workspace/catkin_ws_ov/gt" />
+
+
+    <!-- record the trajectory -->
+    <node name="recorder_estimate" pkg="ov_eval" type="pose_to_file" output="screen" required="true">
+        <param name="topic"      type="str" value="/ov_msckf/poseimu" />
+        <param name="topic_type" type="str" value="PoseWithCovarianceStamped" />
+        <param name="output"     type="str" value="$(arg path_save)/$(arg bag_name).txt" />
+    </node>
+
+
+    <!-- play the dataset -->
+    <node pkg="rosbag" type="play" name="rosbag" args="$(arg bag_path)/$(arg bag_name).bag" required="true"/>
+</launch>
+
